@@ -1,0 +1,142 @@
+pragma solidity 0.8.7;
+
+contract Tours {
+
+
+    struct Table{
+        string TourName;
+
+        string Name;
+        string Surname;
+        string Patronymic;
+
+        string DocType;
+        uint DocNum;
+
+        string PhoneNum;
+        string Email;
+
+        string DepartureDate;
+        // uint DepartureDD;
+        // uint DepartureMM;
+        // uint DepartureYY;
+
+        string ReturnDate;
+        //uint ReturnDD;
+        // uint ReturnMM;
+        // uint ReturnYY;
+    }
+
+    struct Tour{
+        string NameTour;
+        string NameOperator;
+        uint profit;
+        uint price;
+        bool discount;
+    }
+
+
+    Table[] public tbl;
+    Tour[] public tours;
+
+
+
+    address private admin;
+
+    constructor(address _owner) public {
+        admin = msg.sender;
+    }
+
+    modifier onlyAdmin {
+    require(msg.sender == admin, "You are not admin");
+    _;
+    }
+
+    function add_tour(string memory _NameTour, string memory NmeOperator, uint _profit, uint _prf, bool ch) public onlyAdmin {
+        tours.push(Tour(_NameTour,NmeOperator,_profit,_prf,ch));
+    }
+
+
+    function seeToursID() public returns (uint) {
+        return tours.length;
+    }
+
+    function seeTableID() public returns (uint) {
+        return tbl.length;
+    }
+
+
+
+    function  compareStrings ( string memory a ,   string memory b ) private returns ( bool ){
+        if (keccak256 ( abi.encodePacked(a) ) == keccak256 ( abi.encodePacked(b) )){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    function findTour(string memory _Name) public returns (uint){
+        for(uint i = 0; i < tours.length; i++){
+            if(compareStrings(tours[i].NameTour,_Name)){
+                return i;
+            }
+        }
+        uint tmp = 99999;
+        return tmp;
+    }
+
+
+    // function delete_tour(uint _id) public onlyAdmin{
+    //     require(_id < tours.length, "Doest exist");
+    //     delete tours[_id];
+    // }
+
+
+    function delete_tour(uint _id) public onlyAdmin{
+        //require(findTour(_nm) < tours.length && findTour(_nm) != 99999, "Incorrect Tour Name");
+        //uint _id = findTour(_nm);
+        require(_id < tours.length, "Doest exist");
+        delete tours[_id];
+    }
+
+
+    function createOrder(string memory _NameTour, string memory _Name, string memory _Surname, string memory _Patronymic,
+        string memory _DocType, uint _DocNum, string memory _PhoneNum, string memory _Email, string memory _DepartureDate,
+        string memory _ReturnDate
+    ) public payable {
+        //require(findTour(_NameTour) < tours.length && findTour(_NameTour) != 99999, "Incorrect Tour Name");
+        uint tm = findTour(_NameTour);
+        uint prce = tours[tm].price;
+        if(tours[tm].discount == true){
+            prce = prce / 2;
+        }
+        address own = admin;
+        //string memory tmll = msg.value;
+        require(msg.value == prce, "Wrong Amount of Money!");
+        payable(own).transfer(msg.value);
+        tbl.push(Table(_NameTour,_Name,_Surname,_Patronymic, _DocType, _DocNum, _PhoneNum, _Email, _DepartureDate, _ReturnDate));
+    }
+
+
+    function setNewDepartureDate(uint _id,string memory _DpDate) public onlyAdmin{
+        require(_id < tbl.length, "Wrong Order");
+        tbl[_id].DepartureDate = _DpDate;
+    }
+
+    function setNewReturnDate(uint _id,string memory _RtDate) public onlyAdmin{
+        require(_id < tbl.length, "Wrong Order");
+        tbl[_id].ReturnDate = _RtDate;
+    }
+
+    function setNewEmail(uint _id, string memory _email) public onlyAdmin{
+        require(_id < tbl.length, "Wrong Order");
+        tbl[_id].Email = _email;
+    }
+
+    function IncreaseProfit(string memory _Name, uint _plus) public onlyAdmin{
+        require(findTour(_Name) < tours.length && findTour(_Name) != 99999, "Incorrect Tour Name");
+        uint tm = findTour(_Name);
+        tours[tm].profit += _plus;
+    }
+}

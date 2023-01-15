@@ -1,0 +1,36 @@
+import rsa
+import hashlib
+ 
+(pubkeyA, privkeyA) = rsa.newkeys(512)
+(pubkeyB, privkeyB) = rsa.newkeys(512)
+ 
+message = "Hello, world".encode()
+messageWrong = "Hello, world123".encode()
+ 
+s = rsa.sign(message, privkeyA, 'SHA-256')
+sWrong = rsa.sign(messageWrong, privkeyA, 'SHA-256')
+ 
+try:
+    print(rsa.verify(message, s, pubkeyA))
+except Exception as e:
+    print(e)
+ 
+try:
+    print(rsa.verify(message, s, pubkeyB))
+except Exception as e:
+    print(e)
+ 
+try:
+    print(rsa.verify(message, s, privkeyB))
+except Exception as e:
+    print(e)
+ 
+try:
+    print(rsa.verify(messageWrong, s, pubkeyA))
+except Exception as e:
+    print(e)
+ 
+try:
+    print(rsa.verify(message, sWrong, pubkeyA))
+except Exception as e:
+    print(e)
